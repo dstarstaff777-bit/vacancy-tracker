@@ -1,0 +1,12 @@
+CREATE TABLE resumes (
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT       NOT NULL,
+    raw_text    TEXT         NOT NULL,
+    skills      TEXT[],
+    experience  VARCHAR(50),
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_resumes_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+);

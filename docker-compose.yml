@@ -1,0 +1,154 @@
+version: '3.8'
+
+services:
+  # PostgreSQL — основная база данных
+  postgres:
+    image: postgres:16-alpine
+    # alpine версия — легковесная, быстро скачивается
+    container_name: vacancy-tracker-postgres
+    environment:
+      POSTGRES_DB: vacancy_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # в проде пароли должны быть в secrets, не хардкодить
+    ports:
+      - "5432:5432"
+      # проброс порта наружу: host:container
+      # можем подключиться с локальной машины через localhost:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # named volume — данные сохранятся между перезапусками
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      # проверка что PostgreSQL готов принимать подключения
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vacancy-network
+
+  # Redis — кэш для AI запросов
+  redis:
+    image: redis:7-alpine
+    container_name: vacancy-tracker-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - vacancy-network
+
+  # Zookeeper — требуется для Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    # Confluent Platform — проверенный дистрибутив Kafka
+    container_name: vacancy-tracker-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      # порт для клиентов (Kafka broker)
+      ZOOKEEPER_TICK_TIME: 2000
+      # базовый интервал для heartbeat в миллисекундах
+    networks:
+      - vacancy-network
+
+  # Kafka — очередь сообщений
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: vacancy-tracker-kafka
+    depends_on:
+      - zookeeper
+      # Kafka стартует только после Zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      # уникальный ID брокера (если несколько брокеров)
+
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # адрес Zookeeper внутри Docker сети
+
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      # адрес который Kafka отдаёт клиентам
+      # localhost потому что приложение запускается на host машине
+      # если приложение тоже в Docker: kafka:9092
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      # без шифрования для dev окружения
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      # для проды должно быть >= 3, для dev 1 достаточно
+
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      # автоматически создавать топики если их нет
+      # но лучше создавать явно через KafkaConfig в приложении
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - vacancy-network
+
+  # Kafka UI — веб интерфейс для мониторинга Kafka
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: vacancy-tracker-kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - "8090:8080"
+      # UI будет доступен на http://localhost:8090
+    environment:
+      KAFKA_CLUSTERS_0_NAME: vacancy-tracker-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - vacancy-network
+
+  # Spring Boot приложение
+  # Раскомментируйте когда соберёте Docker образ приложения
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: vacancy-tracker-app
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/vacancy_tracker
+  #     SPRING_DATASOURCE_USERNAME: postgres
+  #     SPRING_DATASOURCE_PASSWORD: postgres
+  #     SPRING_DATA_REDIS_HOST: redis
+  #     SPRING_DATA_REDIS_PORT: 6379
+  #     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
+  #   networks:
+  #     - vacancy-network
+
+# Named volumes для персистентности данных
+volumes:
+  postgres_data:
+  # данные PostgreSQL сохранятся между docker-compose down/up
+  redis_data:
+  # данные Redis сохранятся
+
+# Сеть для связи между контейнерами
+networks:
+  vacancy-network:
+    driver: bridge
+    # bridge — стандартная Docker сеть
+    # контейнеры могут общаться по именам (postgres, kafka и тд)
