@@ -1,4 +1,4 @@
-package org.example.common.entity;
+package org.example.entity;
 
 public enum ExperienceLevel {
     JUNIOR,

@@ -16,7 +16,6 @@ public class DummyChatLanguageModel implements ChatLanguageModel {
 
     @Override
     public Response<AiMessage> generate(List<ChatMessage> messages) {
-        // Простой ответ для списка сообщений
         String content = extractLastMessageContent(messages);
         return Response.from(AiMessage.from(generateResponse(content)));
     }
@@ -33,7 +32,6 @@ public class DummyChatLanguageModel implements ChatLanguageModel {
 
     @Override
     public ChatResponse chat(ChatRequest chatRequest) {
-        // Для ChatRequest возвращаем простой ответ
         String content = extractLastMessageContent(chatRequest.messages());
         return ChatResponse.builder()
                 .aiMessage(AiMessage.from(generateResponse(content)))
@@ -42,11 +40,9 @@ public class DummyChatLanguageModel implements ChatLanguageModel {
 
     @Override
     public Set<Capability> supportedCapabilities() {
-        // Возвращаем пустой набор или базовые возможности
         return Set.of();
     }
 
-    // Вспомогательный метод для извлечения текста из последнего сообщения
     private String extractLastMessageContent(List<ChatMessage> messages) {
         if (messages == null || messages.isEmpty()) {
             return "";
@@ -55,9 +51,7 @@ public class DummyChatLanguageModel implements ChatLanguageModel {
         return lastMessage.text();
     }
 
-    // Метод, который возвращает JSON для парсинга
     private String generateResponse(String prompt) {
-        // Если промпт содержит ключевые слова о вакансии или резюме
         if (prompt.contains("вакансия") || prompt.contains("vacancy") || prompt.contains("навыки")) {
             return """
                     {

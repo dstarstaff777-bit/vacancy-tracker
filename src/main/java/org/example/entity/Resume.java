@@ -1,10 +1,15 @@
-package org.example.common.entity;
+package org.example.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "resumes")
@@ -18,8 +23,24 @@ public class Resume {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(nullable = false)
     private Long userId;
-// можно сделать связь через @ManyToOne на User
-// но для простоты оставляем просто Long
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String rawText;
+
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(columnDefinition = "text[]")
+    private List<String> skills;  // ← добавляем это поле
+
+    @Enumerated(EnumType.STRING)
+    private ExperienceLevel experience;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }

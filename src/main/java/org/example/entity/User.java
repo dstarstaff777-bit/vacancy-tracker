@@ -1,11 +1,10 @@
-package org.example.common.entity;
+package org.example.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import javax.management.relation.Role;
 import java.time.LocalDateTime;
 
 @Entity

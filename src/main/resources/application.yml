@@ -12,82 +12,41 @@ spring:
       hibernate:
         format_sql: true
 
-
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.xml
+    change-log: classpath:db/changelog/db.changelog-master.yaml
 
   kafka:
     bootstrap-servers: localhost:9092
-    # адрес Kafka broker
-    # если несколько брокеров: localhost:9092,localhost:9093
-
-    # Настройки Producer (отправка сообщений)
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      # ключ сообщения сериализуем как строку
-
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      # значение сериализуем в JSON автоматически
-
       acks: all
-      # acks = all означает что сообщение считается отправленным
-      # только когда все реплики подтвердили получение
-      # это самый надёжный вариант, но медленнее
-      # acks = 1 — только leader подтверждает (быстрее, менее надёжно)
-      # acks = 0 — вообще не ждём подтверждения (самое быстрое, ненадёжное)
-
       retries: 3
-      # количество повторных попыток отправки при ошибке
-
-    # Настройки Consumer (получение сообщений)
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      # десериализация ключа из строки
-
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      # десериализация значения из JSON
-
       group-id: vacancy-tracker-group
-      # consumer group — все consumer в одной группе
-      # делят между собой сообщения из топика
-      # если один consumer упал, другие подхватят его партиции
-
       auto-offset-reset: earliest
-      # earliest — при первом запуске читать с самого начала топика
-      # latest — читать только новые сообщения
-
       properties:
-        spring.json.trusted.packages: org.example.messaging.dto
-        # безопасность: разрешаем десериализацию только классов
-        # из указанного пакета, чтобы избежать атак через
-        # десериализацию вредоносных объектов
+        spring.json.trusted.packages: org.example.dto
 
-  # Названия Kafka топиков
-    topics:
-      vacancy-raw: vacancy.raw
-      vacancy-processed: vacancy.processed
-      vacancy-failed: vacancy.failed
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
-  ai:
-    openai:
-      api-key: ${OPENAI_API_KEY}
-      # Читаем API ключ из переменной окружения
-      # НИКОГДА не коммитьте API ключи в git!
-      # Создайте файл .env и добавьте его в .gitignore
+  # AI конфигурация - ЗАКОММЕНТИРОВАНО для первого запуска
+  # Раскомментируйте когда получите OpenAI API ключ
+  # ai:
+  #   openai:
+  #     api-key: ${OPENAI_API_KEY}
+  #     model: gpt-4o-mini
+  #     timeout: 60s
+  #     max-retries: 2
 
-      model: gpt-4o-mini
-      # gpt-4o-mini — дешёвая и быстрая модель
-      # gpt-4o — более умная, но дороже
-      # можно использовать Claude через langchain4j-anthropic
-
-      timeout: 60s
-      # таймаут запроса к API
-
-      max-retries: 2
-      # количество повторов при ошибке
-
-  # Настройки кэширования AI ответов
-cache:
-  ai-responses:
-    ttl: 86400  # 24 часа в секундах
-      # одинаковые запросы к AI кэшируем на сутки
+# Названия Kafka топиков
+kafka:
+  topics:
+    vacancy-raw: vacancy.raw
+    vacancy-processed: vacancy.processed
+    vacancy-failed: vacancy.failed
