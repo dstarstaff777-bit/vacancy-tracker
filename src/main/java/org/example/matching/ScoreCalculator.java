@@ -103,7 +103,6 @@ public class ScoreCalculator {
             List<String> resumeSkills,
             List<String> vacancySkills
     ) {
-        // TODO: можно добавить более умное сравнение
 
         return calculateScore(resumeSkills, vacancySkills);
     }

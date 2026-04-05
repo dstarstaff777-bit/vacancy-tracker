@@ -48,9 +48,6 @@ public class VacancyController {
     public ResponseEntity<String> triggerParsing() {
         log.info("POST /api/vacancies/parse - manual parsing triggered");
 
-        // TODO: добавить вызов ParserService.parseAndSendToKafka()
-        // но это будет долгая операция, лучше делать асинхронно
-
         return ResponseEntity.ok("Parsing started");
     }
 

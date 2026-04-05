@@ -27,11 +27,9 @@ public class ResumeService {
     public ResumeDto createResume(ResumeRequest request) {
         log.info("Creating resume for user {}", request.getUserId());
 
-        // Отправляем текст резюме в AI для извлечения навыков
         ResumeAiResponse aiResponse = aiService
                 .extractSkillsFromResume(request.getRawText());
 
-        // Создаём резюме с данными от AI
         Resume resume = Resume.builder()
                 .userId(request.getUserId())
                 .rawText(request.getRawText())
@@ -78,7 +76,6 @@ public class ResumeService {
                         "Resume not found with id: " + id
                 ));
 
-        // Если текст изменился — перезапускаем AI обработку
         if (!resume.getRawText().equals(request.getRawText())) {
             log.info("Resume text changed, re-extracting skills");
 
@@ -88,13 +85,7 @@ public class ResumeService {
             resume.setRawText(request.getRawText());
             resume.setSkills(aiResponse.getSkills());
             resume.setExperience(aiResponse.getExperience());
-
-            // При обновлении резюме нужно пересчитать матчинг
-            // но это долго, лучше сделать асинхронно или удалить старые результаты
-            // matchResultRepository.deleteByResumeId(id);
         }
-
-        // Hibernate автоматически сохранит изменения при commit транзакции
 
         return mapToDto(resume);
     }
@@ -110,8 +101,6 @@ public class ResumeService {
         }
 
         resumeRepository.deleteById(id);
-        // Благодаря ON DELETE CASCADE в БД
-        // все связанные MatchResult удалятся автоматически
     }
 
     private ResumeDto mapToDto(Resume resume) {
