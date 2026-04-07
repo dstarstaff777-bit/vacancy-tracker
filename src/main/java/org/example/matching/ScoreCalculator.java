@@ -15,7 +15,6 @@ public class ScoreCalculator {
             List<String> resumeSkills,
             List<String> vacancySkills
     ) {
-        // Проверки на null и пустые списки
         if (resumeSkills == null || resumeSkills.isEmpty()) {
             log.warn("Resume skills are empty");
             return 0;

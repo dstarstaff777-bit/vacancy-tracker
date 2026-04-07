@@ -35,6 +35,12 @@ spring:
       host: localhost
       port: 6379
 
+kafka:
+  topics:
+    vacancy-raw: vacancy.raw
+    vacancy-processed: vacancy.processed
+    vacancy-failed: vacancy.failed
+
   # AI конфигурация - ЗАКОММЕНТИРОВАНО для первого запуска
   # Раскомментируйте когда получите OpenAI API ключ
   # ai:
@@ -44,9 +50,4 @@ spring:
   #     timeout: 60s
   #     max-retries: 2
 
-# Названия Kafka топиков
-kafka:
-  topics:
-    vacancy-raw: vacancy.raw
-    vacancy-processed: vacancy.processed
-    vacancy-failed: vacancy.failed
+

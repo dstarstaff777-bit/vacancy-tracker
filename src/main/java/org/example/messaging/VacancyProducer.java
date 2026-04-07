@@ -65,7 +65,6 @@ public class VacancyProducer {
     public void sendFailedVacancy(VacancyMessage message, String errorReason) {
         log.warn("Sending failed vacancy to DLQ: {} (reason: {})",
                 message.getSourceUrl(), errorReason);
-        // DLQ = Dead Letter Queue — очередь для сообщений с ошибками
 
         kafkaTemplate.send("${kafka.topics.vacancy-failed}",
                 message.getSourceUrl(), message);

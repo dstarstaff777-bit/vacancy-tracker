@@ -16,6 +16,4 @@ public class ResumeDto {
     private ExperienceLevel experience;
     private LocalDateTime createdAt;
 
-    // rawText не включаем в DTO для списка резюме
-    // он может быть большим, отдаём только при запросе конкретного резюме
 }

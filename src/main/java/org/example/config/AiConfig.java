@@ -22,7 +22,6 @@ public class AiConfig {
 
     @Bean
     public ChatLanguageModel chatLanguageModel() {
-        // Если ключ не задан, используем заглушку
         if (apiKey == null || apiKey.trim().isEmpty()) {
             System.out.println("⚠️ OpenAI API key not set, using dummy ChatLanguageModel (returns placeholder responses)");
             return new DummyChatLanguageModel();

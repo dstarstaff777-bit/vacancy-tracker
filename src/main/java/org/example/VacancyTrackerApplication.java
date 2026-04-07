@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class VacancyTrackerApplication {
-    public static void main(String[] args) {  // ← треугольник здесь
+    public static void main(String[] args) {
         SpringApplication.run(VacancyTrackerApplication.class, args);
     }
 }

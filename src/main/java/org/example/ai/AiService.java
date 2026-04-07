@@ -45,8 +45,6 @@ public class AiService {
 
         } catch (Exception e) {
             log.error("Error extracting skills from vacancy", e);
-            // Если AI упал — возвращаем пустой результат
-            // лучше чем роняться полностью
             return VacancyAiResponse.builder()
                     .skills(List.of())
                     .experienceString(null)
@@ -63,7 +61,6 @@ public class AiService {
             String prompt = promptBuilder.buildResumeSkillsExtractionPrompt(resumeText);
             String aiResponse = chatModel.generate(prompt);
 
-            // Парсим ответ
             return objectMapper.readValue(
                     cleanJsonResponse(aiResponse),
                     ResumeAiResponse.class

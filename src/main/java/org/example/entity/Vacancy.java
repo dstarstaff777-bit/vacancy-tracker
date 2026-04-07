@@ -31,14 +31,7 @@ public class Vacancy {
     @Column(columnDefinition = "TEXT")
     private String rawText;
 
-    // ||===============|| Ошибка Hibernate не может сохранить List<String> в TEXT[]
-
     @JdbcTypeCode(SqlTypes.ARRAY)
-    // @Type из библиотеки hypersistence-utils
-    // нужен чтобы Hibernate умел работать
-    // с PostgreSQL массивами TEXT[]
-    // без этого он не знает как сохранить List<String>
-    // в колонку типа TEXT[]
     @Column(columnDefinition = "text[]")
     private List<String> skills;
 
